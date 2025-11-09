@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  
+  company   Company?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  userId      String   @unique  // ADD THIS
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)  // ADD THIS
+  
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  
+  logo             String?
+  banner           String?
+  primaryColor     String   @default("#3B82F6")
+  secondaryColor   String   @default("#10B981")
+  backgroundColor  String   @default("#FFFFFF")
+  textColor        String   @default("#1F2937")
+  cultureVideoUrl  String?
+  
+  published        Boolean  @default(false)
+  metaTitle        String?
+  metaDescription  String?  @db.Text
+  
+  jobs             Job[]
+  contentSections  ContentSection[]
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@map("companies")
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  companyId   String
+  
+  // Basic info
+  title           String
+  description     String   @db.Text
+  location        String
+  workPolicy      String   // "Remote", "Hybrid", "On-site"
+  jobType         String   // "Full time", "Part time", "Contract"
+  contractType    String   // "Permanent", "Temporary", "Internship"
+  department      String?
+  experienceLevel String?  // "Junior", "Mid-level", "Senior"
+  
+  // Salary
+  salaryMin       Int?
+  salaryMax       Int?
+  salaryCurrency  String   @default("USD")
+  salaryPeriod    String?  // "month", "year"
+  
+  // Detailed info
+  requirements     String?  @db.Text
+  responsibilities String?  @db.Text
+  benefits         String?  @db.Text
+  
+  // Status
+  status          String   @default("open")
+  
+  // Relations
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([companyId])
+  @@index([status])
+  @@index([location])
+  @@index([jobType])
+  @@index([workPolicy])
+  @@index([department])
+  @@map("jobs")
+}
+
+model ContentSection {
+  id          String   @id @default(cuid())
+  companyId   String
+  
+  type        String
+  title       String
+  content     String   @db.Text
+  imageUrl    String?
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([companyId, order])
+  @@map("content_sections")
+}
