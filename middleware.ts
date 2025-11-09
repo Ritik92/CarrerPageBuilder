@@ -1,38 +1,25 @@
 // middleware.ts
-import { auth } from "@/auth"
 import { NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  const token = req.cookies.get("authjs.session-token") || req.cookies.get("__Secure-authjs.session-token")
 
+  const isLoggedIn = !!token
   const isAuthPage = pathname === "/login" || pathname === "/signup"
-  const isHomePage = pathname === "/"
+  const isProtected = pathname.includes("/edit") || pathname.includes("/preview")
 
-  // If logged in and trying to access auth pages, redirect to home
   if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/", req.url))
   }
 
-  // Allow access to home page for everyone
-  if (isHomePage) {
-    return NextResponse.next()
-  }
-
-  // Allow access to public careers pages
-  if (pathname.includes("/careers")) {
-    return NextResponse.next()
-  }
-
-  // Protect edit and preview pages
-  if (pathname.includes("/edit") || pathname.includes("/preview")) {
-    if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", req.url))
-    }
+  if (isProtected && !isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url))
   }
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"]
