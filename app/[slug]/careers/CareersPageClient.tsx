@@ -13,7 +13,7 @@ interface Job {
   location: string;
   workPolicy: string;
   jobType: string;
-  department: string ;
+  department: string|null ;
   experienceLevel: string | null;
 }
 
@@ -45,9 +45,13 @@ export default function CareersPageClient({ company }: { company: Company }) {
   const [departmentFilter, setDepartmentFilter] = useState('all');
 
   const departments = useMemo(() => {
-  const unique = new Set(company.jobs.map((j) => j.department).filter(Boolean));
+  const unique = new Set(
+    company.jobs
+      .map((j) => j.department)
+      .filter((d): d is string => d !== null)
+  );
   return ['all', ...Array.from(unique)];
-  }, [company.jobs]);
+}, [company.jobs]);
 
   const locations = useMemo(() => {
     const unique = new Set(company.jobs.map((j) => j.location));
