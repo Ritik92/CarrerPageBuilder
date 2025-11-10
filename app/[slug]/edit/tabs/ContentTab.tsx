@@ -30,6 +30,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import HeroSectionEditor from '@/components/careers/editor/HeroSectionEditor';
 
 interface ContentSection {
   id: string;
@@ -301,7 +302,12 @@ const handleToggleVisibility = async (id: string, visible: boolean) => {
     </Button>
   </div>
 </DialogContent>
-        </Dialog>
+       </Dialog>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">Hero Section</h3>
+        <HeroSectionEditor company={company} />
       </div>
 
       <DndContext

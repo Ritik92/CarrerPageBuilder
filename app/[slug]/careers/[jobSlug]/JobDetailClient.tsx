@@ -56,7 +56,7 @@ export default function JobDetailClient({ job }: { job: Job }) {
                 <img src={job.company.logo} alt={job.company.name} className="h-16 w-16 rounded-lg object-cover" />
               )}
               <div>
-                <h1 className="text-3xl font-bold" style={{ color: job.company.primaryColor }}>
+                <h1 className="text-3xl font-bold">
                   {job.title}
                 </h1>
                 <p className="text-xl text-muted-foreground">{job.company.name}</p>

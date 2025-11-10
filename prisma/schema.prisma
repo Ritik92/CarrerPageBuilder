@@ -104,6 +104,7 @@ model ContentSection {
   imageUrl    String?
   order       Int      @default(0)
   visible     Boolean  @default(true)
+  data        Json?
   
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   

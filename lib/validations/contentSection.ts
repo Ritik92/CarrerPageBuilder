@@ -5,7 +5,11 @@ export const createContentSectionSchema = z.object({
   type: z.string().min(1),
   title: z.string().min(1).max(200),
   content: z.string().min(1),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.preprocess(
+    (val) => val === '' ? undefined : val,
+    z.string().url().optional()
+  ),
+  data: z.any().optional(), // Add this line
   order: z.number().int().default(0),
   visible: z.boolean().default(true),
 });

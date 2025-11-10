@@ -28,7 +28,7 @@ export default async function Home() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-                  <Briefcase className="h-6 w-6 text-white" />
+                  <img src="/app/favicon.ico" className="h-6 w-6 text-white" />
                 </div>
                 <span className="text-2xl font-bold text-slate-900">Talent Hub</span>
               </div>
