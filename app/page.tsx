@@ -27,8 +27,8 @@ export default async function Home() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-                  <img src="/app/favicon.ico" className="h-6 w-6 text-white" />
+                <div className="h-10 w-10 rounded-xl  flex items-center justify-center">
+                  <img src="/favicon.ico" className="h-10 w-10 text-white" />
                 </div>
                 <span className="text-2xl font-bold text-slate-900">Talent Hub</span>
               </div>
@@ -116,9 +116,9 @@ export default async function Home() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center">
-                <Briefcase className="h-6 w-6 text-white" />
-              </div>
+             <div className="h-10 w-10 rounded-xl  flex items-center justify-center">
+                  <img src="/favicon.ico" className="h-10 w-10 text-white" />
+                </div>
               <span className="text-2xl font-bold text-slate-900">Talent Hub</span>
             </div>
             <div className="flex items-center gap-3">
