@@ -168,12 +168,12 @@ export default function CareersPageClient({ company }: { company: Company }) {
             This is {company.name}
           </h2>
           <div className="aspect-video max-w-5xl mx-auto">
-            <iframe
-              src={company.cultureVideoUrl}
-              className="h-full w-full rounded-2xl shadow-lg"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+           <iframe
+  src={`${company.cultureVideoUrl}${company.cultureVideoUrl.includes('?') ? '&' : '?'}autoplay=0&muted=1`}
+  className="h-full w-full rounded-2xl shadow-lg"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+/>
           </div>
         </section>
       )}
