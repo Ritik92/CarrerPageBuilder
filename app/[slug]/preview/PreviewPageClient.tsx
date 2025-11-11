@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, MapPin, Briefcase, Clock, Eye } from 'lucide-react';
+import Link from 'next/link';
+import HeroSection from '@/components/careers/sections/HeroSection';
 
 interface Job {
   id: string;
@@ -25,6 +27,7 @@ interface ContentSection {
   title: string;
   content: string;
   imageUrl: string | null;
+  data?: any;
 }
 
 interface Company {
@@ -45,6 +48,17 @@ export default function PreviewPageClient({ company }: { company: Company }) {
   const [search, setSearch] = useState('');
   const [locationFilter, setLocationFilter] = useState('all');
   const [jobTypeFilter, setJobTypeFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+
+  const heroSection = company.contentSections.find((s) => s.type === 'hero');
+  const otherSections = company.contentSections.filter((s) => s.type !== 'hero');
+
+  const departments = useMemo(() => {
+    const unique = new Set(
+      company.jobs.map((j) => j.department).filter((d): d is string => d !== null)
+    );
+    return ['all', ...Array.from(unique)];
+  }, [company.jobs]);
 
   const locations = useMemo(() => {
     const unique = new Set(company.jobs.map((j) => j.location));
@@ -61,9 +75,10 @@ export default function PreviewPageClient({ company }: { company: Company }) {
       const matchesSearch = job.title.toLowerCase().includes(search.toLowerCase());
       const matchesLocation = locationFilter === 'all' || job.location === locationFilter;
       const matchesJobType = jobTypeFilter === 'all' || job.jobType === jobTypeFilter;
-      return matchesSearch && matchesLocation && matchesJobType;
+      const matchesDepartment = departmentFilter === 'all' || job.department === departmentFilter;
+      return matchesSearch && matchesLocation && matchesJobType && matchesDepartment;
     });
-  }, [company.jobs, search, locationFilter, jobTypeFilter]);
+  }, [company.jobs, search, locationFilter, jobTypeFilter, departmentFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,52 +95,98 @@ export default function PreviewPageClient({ company }: { company: Company }) {
         </div>
       </div>
 
-      {/* Banner */}
-      {company.banner && (
-        <div
-          className="h-64 w-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${company.banner})` }}
+      {/* Hero Section */}
+      {heroSection && (
+        <HeroSection
+          data={heroSection.data || {}}
+          logo={company.logo}
+          companyName={company.name}
         />
       )}
 
-      {/* Header */}
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4">
-            {company.logo && (
-              <img src={company.logo} alt={company.name} className="h-16 w-16 rounded-lg object-cover" />
-            )}
-            <div>
-              <h1 className="text-4xl font-bold" style={{ color: company.primaryColor }}>
-                {company.name}
-              </h1>
-              {company.description && <p className="mt-2 text-muted-foreground">{company.description}</p>}
+      {/* Fallback Hero */}
+      {!heroSection && (
+        <>
+          {company.banner && (
+            <div
+              className="h-64 w-full bg-cover bg-center"
+              style={{ backgroundImage: `url(${company.banner})` }}
+            />
+          )}
+          <div className="border-b">
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex items-center gap-4">
+                {company.logo && (
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="h-16 w-16 rounded-lg object-cover"
+                  />
+                )}
+                <div>
+                  <h1 className="text-4xl font-bold" style={{ color: company.primaryColor }}>
+                    {company.name}
+                  </h1>
+                  {company.description && (
+                    <p className="mt-2 text-muted-foreground">{company.description}</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
-      <div className="container mx-auto px-4 py-12">
-        {/* Content Sections */}
-        {company.contentSections.map((section) => (
-          <section key={section.id} className="mb-12">
-            <h2 className="mb-4 text-3xl font-bold">{section.title}</h2>
-            {section.imageUrl && (
-              <img src={section.imageUrl} alt={section.title} className="mb-4 rounded-lg" />
-            )}
-            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: section.content }} />
-          </section>
-        ))}
+      {/* Content Sections */}
+      <div className="container mx-auto px-6 py-20 max-w-7xl">
+        {otherSections.map((section, index) => {
+          const isEven = index % 2 === 0;
+          return (
+            <section key={section.id} className="mb-32 last:mb-20">
+              <div className={`grid lg:grid-cols-2 gap-20 items-center ${!isEven ? 'lg:grid-flow-dense' : ''}`}>
+                {/* Text Content */}
+                <div className={!isEven ? 'lg:col-start-2' : ''}>
+                  <h2 
+                    className="text-4xl lg:text-5xl font-bold mb-6 tracking-tight" 
+                    style={{ color: company.primaryColor }}
+                  >
+                    {section.title}
+                  </h2>
+                  <div 
+                    className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed space-y-6 [&>p]:text-lg [&>p]:leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: section.content }} 
+                  />
+                </div>
+                
+                {/* Image */}
+                {section.imageUrl && (
+                  <div className={!isEven ? 'lg:col-start-1 lg:row-start-1' : ''}>
+                    <img 
+                      src={section.imageUrl} 
+                      alt={section.title} 
+                      className="rounded-3xl w-full h-auto object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        })}
 
         {/* Culture Video */}
         {company.cultureVideoUrl && (
-          <section className="mb-12">
-            <h2 className="mb-4 text-3xl font-bold">Life at {company.name}</h2>
-            <div className="aspect-video">
+          <section className="mb-32">
+            <h2 
+              className="text-4xl lg:text-5xl font-bold mb-8 tracking-tight text-center" 
+              style={{ color: company.primaryColor }}
+            >
+              This is {company.name}
+            </h2>
+            <div className="aspect-video max-w-5xl mx-auto">
               <iframe
-                src={company.cultureVideoUrl}
-                className="h-full w-full rounded-lg"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                src={`${company.cultureVideoUrl}${company.cultureVideoUrl.includes('?') ? '&' : '?'}autoplay=0&muted=1`}
+                className="h-full w-full rounded-2xl shadow-lg"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
             </div>
@@ -133,22 +194,44 @@ export default function PreviewPageClient({ company }: { company: Company }) {
         )}
 
         {/* Jobs Section */}
-        <section>
-          <h2 className="mb-6 text-3xl font-bold">Open Positions</h2>
+        <section id="jobs" className="scroll-mt-20">
+          <div className="text-center mb-12">
+            <h2 
+              className="text-4xl lg:text-5xl font-bold mb-4 tracking-tight" 
+              style={{ color: company.primaryColor }}
+            >
+              Open Positions
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Join our team and make an impact
+            </p>
+          </div>
 
           {/* Filters */}
-          <div className="mb-6 flex flex-col gap-4 md:flex-row">
+          <div className="mb-10 flex flex-col gap-4 md:flex-row max-w-5xl mx-auto">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
-                placeholder="Search by job title..."
+                placeholder="Search positions..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
+                className="pl-12 h-12 text-base"
               />
             </div>
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-full md:w-[180px] h-12">
+                <SelectValue placeholder="Department" />
+              </SelectTrigger>
+              <SelectContent>
+                {departments.map((dept) => (
+                  <SelectItem key={dept} value={dept}>
+                    {dept === 'all' ? 'All Departments' : dept}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[180px] h-12">
                 <SelectValue placeholder="Location" />
               </SelectTrigger>
               <SelectContent>
@@ -160,7 +243,7 @@ export default function PreviewPageClient({ company }: { company: Company }) {
               </SelectContent>
             </Select>
             <Select value={jobTypeFilter} onValueChange={setJobTypeFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="w-full md:w-[180px] h-12">
                 <SelectValue placeholder="Job Type" />
               </SelectTrigger>
               <SelectContent>
@@ -174,36 +257,64 @@ export default function PreviewPageClient({ company }: { company: Company }) {
           </div>
 
           {/* Jobs List */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredJobs.map((job) => (
-              <Card key={job.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <CardTitle className="text-lg">{job.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {job.location}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Briefcase className="h-4 w-4" />
-                    {job.workPolicy}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    {job.jobType}
-                  </div>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {job.department && <Badge variant="secondary">{job.department}</Badge>}
-                    {job.experienceLevel && <Badge variant="outline">{job.experienceLevel}</Badge>}
-                  </div>
-                </CardContent>
-              </Card>
+              <Link key={job.id} href={`/${company.slug}/careers/${job.id}`}>
+                <Card
+                  className="hover:shadow-lg transition-all cursor-pointer hover:border-2"
+                  style={{ '--hover-border-color': company.secondaryColor } as React.CSSProperties}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = company.secondaryColor)}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
+                >
+                  <CardHeader className="pb-4">
+                    <CardTitle 
+                      className="text-xl font-semibold leading-tight transition-colors" 
+                      onMouseEnter={(e) => e.currentTarget.style.color = company.primaryColor} 
+                      onMouseLeave={(e) => e.currentTarget.style.color = ''}
+                    >
+                      {job.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                      <span>{job.location}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Briefcase className="h-4 w-4 flex-shrink-0" />
+                      <span>{job.workPolicy}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Clock className="h-4 w-4 flex-shrink-0" />
+                      <span>{job.jobType}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-3">
+                      {job.department && (
+                        <Badge
+                          className="font-medium"
+                          style={{ backgroundColor: company.primaryColor, color: 'white' }}
+                        >
+                          {job.department}
+                        </Badge>
+                      )}
+                      {job.experienceLevel && (
+                        <Badge variant="outline" className="font-medium">
+                          {job.experienceLevel}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
 
           {filteredJobs.length === 0 && (
-            <p className="py-12 text-center text-muted-foreground">No jobs found matching your criteria.</p>
+            <div className="py-20 text-center">
+              <p className="text-lg text-gray-600 dark:text-gray-400">
+                No positions found matching your criteria.
+              </p>
+            </div>
           )}
         </section>
       </div>
